@@ -1,0 +1,51 @@
+from google.cloud import aiplatform
+
+# Initialize Google Cloud AI Platform
+aiplatform.init(
+    project="your-project-id",
+    location="us-central1"
+)
+
+# --- Text Generation (Gemini Text Model) ---
+def generate_storyline(prompt: str) -> str:
+    text_model = aiplatform.TextGenerationModel("gemini-text-model-id")
+    response = text_model.predict(prompt)
+    return response.text
+
+# --- Image Generation (Gemini Vision Model) ---
+def generate_comic_panel(description: str):
+    image_model = aiplatform.ImageGenerationModel("gemini-vision-model-id")
+    response = image_model.predict(description)
+    return response.image_uri
+
+# --- Orchestration Layer ---
+def create_comic_page(theme: str, characters: str, style: str):
+    # Step 1: Generate storyline
+    storyline_prompt = f"Create a comic story about {characters} in {theme} style {style}"
+    script = generate_storyline(storyline_prompt)
+
+    # Step 2: Generate visuals
+    panel_prompt = f"{characters} in {theme} setting, {style} style"
+    panel_image = generate_comic_panel(panel_prompt)
+
+    # Step 3: Combine into comic page structure
+    comic_page = {
+        "script": script,
+        "panel_image": panel_image,
+        "metadata": {
+            "theme": theme,
+            "characters": characters,
+            "style": style
+        }
+    }
+    return comic_page
+
+# --- Demo Run ---
+if __name__ == "__main__":
+    comic = create_comic_page(
+        theme="space adventure",
+        characters="superhero team",
+        style="cartoon"
+    )
+    print("Comic Script:", comic["script"])
+    print("Comic Panel Image URL:", comic["panel_image"])
